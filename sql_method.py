@@ -2,44 +2,54 @@ import sqlite3 as sql
 import zrk_info as log
 
 # Методы по работе в БД для цирка с конями
-conn = sql.connect("Zirk.db")
 
 
-def create_table(name, columns: dict):
-    cursor = conn.cursor()
-    sSQL = 'create table {} ('.format(name)
-    for k, v in columns.items():
-        sSQL = sSQL + k + ' ' + v
-        if k == list(columns.keys())[-1]:
-            sSQL = sSQL + ')'
-        else:
-            sSQL = sSQL + ','
-    try:
-        cursor.execute(sSQL)
-        log.ok_print('table {} successfully created'.format(name))
-    except Exception as e:
-        log.err_print('Error while creating table {}'.format(name) + ' ' + str(e))
+class DatabaseManager(object):
+    def __init__(self, db):
+        self.conn = sql.connect(db)
+        self.conn.execute('pragma foreign_keys = on')
+        self.conn.commit()
+        self.cursor = self.conn.cursor()
 
 
-def drop_table(name):
-    cursor = conn.cursor()
-    sSQL = 'drop table {}'.format(name)
-    try:
-        cursor.execute(sSQL)
-        log.ok_print('table {} dropped successfully'.format(name))
-    except Exception as e:
-        log.err_print("Can't drop table {}".format(name) + ': ' + str(e))
+    def create_table(self, name, columns: dict):
+        sSQL = 'create table {} ('.format(name)
+        for k, v in columns.items():
+            sSQL = sSQL + k + ' ' + v
+            if k == list(columns.keys())[-1]:
+                sSQL = sSQL + ')'
+            else:
+                sSQL = sSQL + ','
+        try:
+            self.cursor.execute(sSQL)
+            log.ok_print('table {} successfully created'.format(name))
+        except Exception as e:
+            log.err_print('Error while creating table {}'.format(name) + ' ' + str(e))
 
 
-def getquery(sSQL):
-    cursor = conn.cursor()
-    log.ok_print('SQL: '+sSQL)
-    try:
-        cursor.execute(sSQL)
-        log.ok_print('  rows selected: ' + str(len(list(cursor))))
-    except Exception as e:
-        log.err_print('SQL ERROR: ' + '\n' + sSQL + '\n' + str(e))
-    return cursor
+    def drop_table(self, name):
+        sSQL = 'drop table {}'.format(name)
+        try:
+            self.cursor.execute(sSQL)
+            log.ok_print('table {} dropped successfully'.format(name))
+        except Exception as e:
+            log.err_print("Can't drop table {}".format(name) + ': ' + str(e))
+
+    def getquery(self, sSQL):
+        log.ok_print('SQL: ' + sSQL)
+        try:
+            self.cursor.execute(sSQL)
+            log.ok_print('  rows selected: ' + str(len(list(self.cursor))))
+        except Exception as e:
+            log.err_print('SQL ERROR: ' + '\n' + sSQL + '\n' + str(e))
+        return self.cursor
+
+
+    def __del__(self):
+        self.conn.close()
+
+
+
 
 
 def insert(table, column: list):
@@ -74,10 +84,15 @@ def getwhere(column: dict):
     return sSQL
 
 
+def commit():
+    conn.commit()
+
 def isPrimary(table, column: dict):  # Проверяет, есть ли уже в таблице записи с такими значениями
     sSQL = 'select 1 from {} '.format(table) + getwhere(column)
-    cursor = getquery(sSQL)
-    if cursor.fetchone() is None:
+    ds = getquery(sSQL)
+    if len(ds) is None:
+        print('ret true')
         return True
     else:
+        print('ret false')
         return False

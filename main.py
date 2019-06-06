@@ -46,15 +46,7 @@ def createdb():
                    ])
     else:
         print('double')
-
-    print(
-        sql.isPrimary('Reestr',
-                      {
-                          'pactnum': 'pact'
-                       }
-                      )
-    )
-
+    sql.commit()
 
 class CalendarDialog(sd.Dialog):
     """Dialog box that displays a calendar and returns the selected date"""
