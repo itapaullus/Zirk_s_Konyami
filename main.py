@@ -2,7 +2,59 @@ from tkinter import *
 from tkinter import simpledialog as sd
 from tkinter.filedialog import askopenfilename
 import tkcalendar
+import sql_method as sql
+
 # import tkSimpleDialog
+
+def createdb():
+    sql.drop_table('Reestr')
+    sql.create_table('Reestr', {'reestr_id': 'integer',
+                                'pactnum': 'text',
+                                'place': 'text',
+                                'renter': 'text',
+                                'month': 'text',
+                                'summ': 'real',
+                                'phone': 'text'
+                                }
+                     )
+
+
+    sql.insert('Reestr', [1,
+                          'pact',
+                          'placee',
+                          'ivanyan',
+                          'Jan',
+                          1233121,
+                          '+79645897062'
+                          ]
+               )
+
+    if sql.isPrimary('Reestr',
+                     {
+                         'pactnum': 'pact'
+                     }
+                     ):
+        sql.insert('Reestr',
+                   [
+                       1,
+                       'pact',
+                       'asd',
+                       'dfsdf',
+                       'Feb',
+                       2123,
+                       '45678'
+                   ])
+    else:
+        print('double')
+
+    print(
+        sql.isPrimary('Reestr',
+                      {
+                          'pactnum': 'pact'
+                       }
+                      )
+    )
+
 
 class CalendarDialog(sd.Dialog):
     """Dialog box that displays a calendar and returns the selected date"""
@@ -22,10 +74,12 @@ def save_rate():
     rate.mainloop()
 
 def load_file():
-    name = askopenfilename(initialdir="/",
-                           filetypes =(("XLS File", "*.xls"),("XLSX File", "*.xlsx"),("All Files","*.*")),
-                           title = "Выберите реестр"
-                           )
+    print('SMTH')
+
+    # name = askopenfilename(initialdir="/",
+    #                        filetypes =(("XLS File", "*.xls"),("XLSX File", "*.xlsx"),("All Files","*.*")),
+    #                        title = "Выберите реестр"
+    #                        )
     # load = Toplevel()
     # load.grab_set()
     # load.title('Загрузка ведомости')
@@ -44,6 +98,7 @@ options_menu.add_command(label = 'Настройка Ведомости')
 options_menu.add_command(label = 'Настройка Комиссии', command = save_rate)
 options_menu.add_command(label = 'Группы')
 options_menu.add_command(label = 'Пункты')
+options_menu.add_command(label = 'Создать БД', command = createdb)
 # Загрузка
 load_menu = Menu(main_menu)
 load_menu.add_command(label = 'Загрузка Ведомости', command = load_file)
