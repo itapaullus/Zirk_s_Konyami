@@ -1,14 +1,14 @@
 from tkinter import *
 from tkinter import simpledialog as sd
-from tkinter.filedialog import askopenfilename
-import tkcalendar
+import tkcalendar, xlsparser
 import sql_method as sql
 
 # import tkSimpleDialog
 
 def createdb():
-    sql.drop_table('Reestr')
-    sql.create_table('Reestr', {'reestr_id': 'integer',
+    conn = sql.DatabaseManager('Zirk.db')
+    conn.drop_table('Reestr')
+    conn.create_table('Reestr', {'reestr_id': 'text',
                                 'pactnum': 'text',
                                 'place': 'text',
                                 'renter': 'text',
@@ -18,36 +18,6 @@ def createdb():
                                 }
                      )
 
-
-    sql.insert('Reestr', [1,
-                          'pact',
-                          'placee',
-                          'ivanyan',
-                          'Jan',
-                          1233121,
-                          '+79645897062'
-                          ]
-               )
-
-    if sql.isPrimary('Reestr',
-                     {
-                         'pactnum': 'pact'
-                     }
-                     ):
-        sql.insert('Reestr',
-                   [
-                       1,
-                       'pact',
-                       'asd',
-                       'dfsdf',
-                       'Feb',
-                       2123,
-                       '45678'
-                   ])
-    else:
-        print('double')
-    sql.commit()
-
 class CalendarDialog(sd.Dialog):
     """Dialog box that displays a calendar and returns the selected date"""
     def body(self, master):
@@ -56,7 +26,6 @@ class CalendarDialog(sd.Dialog):
 
     def apply(self):
         self.result = self.calendar.selection_get()
-        print(self.result)
 
 def save_rate():
     rate = Tk()
@@ -66,21 +35,21 @@ def save_rate():
     rate.mainloop()
 
 def load_file():
-    print('SMTH')
-
-    # name = askopenfilename(initialdir="/",
-    #                        filetypes =(("XLS File", "*.xls"),("XLSX File", "*.xlsx"),("All Files","*.*")),
-    #                        title = "Выберите реестр"
-    #                        )
-    # load = Toplevel()
-    # load.grab_set()
-    # load.title('Загрузка ведомости')
-    # load.geometry('480x320')
-    # load.mainloop()
-
+    ask = CalendarDialog(window)
+    print(ask.result)
+    if ask.result is None: return
+    else: print(ask.result)
+    file = xlsparser.Reestr()
+    print(file.path)
+    ds = file.parse()
+    conn = sql.DatabaseManager('Zirk.db')
+    conn.delete('where reestr_id = \'{}\''.format(file.id))
+    for rec in ds:
+        conn.insert('Reestr', rec.values())
+    conn.commit()
 
 window = Tk()
-window.title('Emishyan Incorporated')
+window.title('Цирк с Конями...')
 window.geometry('640x480')
 main_menu = Menu(window)
 # options_menu.add_command(label = 'Настройка')

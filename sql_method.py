@@ -7,10 +7,10 @@ import zrk_info as log
 class DatabaseManager(object):
     def __init__(self, db):
         self.conn = sql.connect(db)
+        self.conn.row_factory = sql.Row
         self.conn.execute('pragma foreign_keys = on')
         self.conn.commit()
         self.cursor = self.conn.cursor()
-
 
     def create_table(self, name, columns: dict):
         sSQL = 'create table {} ('.format(name)
@@ -26,7 +26,6 @@ class DatabaseManager(object):
         except Exception as e:
             log.err_print('Error while creating table {}'.format(name) + ' ' + str(e))
 
-
     def drop_table(self, name):
         sSQL = 'drop table {}'.format(name)
         try:
@@ -35,64 +34,66 @@ class DatabaseManager(object):
         except Exception as e:
             log.err_print("Can't drop table {}".format(name) + ': ' + str(e))
 
-    def getquery(self, sSQL):
+    def getquery(self, sSQL: str):
+        """
+        :rtype: Cursor
+        """
         log.ok_print('SQL: ' + sSQL)
         try:
-            self.cursor.execute(sSQL)
-            log.ok_print('  rows selected: ' + str(len(list(self.cursor))))
+            ls = list(self.cursor.execute(sSQL))
+            log.ok_print('  rows selected: ' + str(len(ls)))
+            return ls
         except Exception as e:
             log.err_print('SQL ERROR: ' + '\n' + sSQL + '\n' + str(e))
-        return self.cursor
 
+    def delete(self, clause):
+        sSQL = 'delete from Reestr ' + clause
+        try:
+            log.ok_print(sSQL)
+            self.cursor.execute(sSQL)
+            log.ok_print(str(self.cursor.rowcount) + ' rows deleted')
+        except Exception as e:
+            log.err_print('Ошибка при удалении: '+str(e))
+
+    def insert(self, table, column: list):
+        sSQL = 'insert into {} values ('.format(table)
+        for i, v in enumerate(column):
+            if type(v) is int or type(v) is float:
+                vv = str(v)
+            else:
+                vv = "'" + str(v) + "'"
+            sSQL = sSQL + vv
+            if i == len(column) - 1:
+                sSQL = sSQL + ')'
+            else:
+                sSQL = sSQL + ','
+        log.ok_print(sSQL)
+        try:
+            self.cursor.execute(sSQL)
+            log.ok_print('1 row inserted into {}'.format(table))
+        except Exception as e:
+            log.err_print('Ошибка при Insert в таблицу {}: '.format(table) + str(e))
+
+    def getwhere(self, column: dict):
+        sSQL = 'where 1=1 ' + '\n'
+        for k, v in column.items():
+            if type(v) is int or type(v) is float:
+                vv = str(v)
+            else:
+                vv = "'" + str(v) + "'"
+            sSQL = sSQL + 'and ' + k + ' = ' + vv + '\n'
+        return sSQL
+
+    def commit(self):
+        self.conn.commit()
+
+    def isPrimary(self, table, column: dict):  # Проверяет, есть ли уже в таблице записи с такими значениями
+        sSQL = 'select 1 from {} '.format(table) + self.getwhere(column)
+        ds = self.getquery(sSQL)
+        if len(ds) == 0:
+            return True
+        else:
+            return False
 
     def __del__(self):
         self.conn.close()
-
-
-
-
-
-def insert(table, column: list):
-    cursor = conn.cursor()
-    sSQL = 'insert into {} values ('.format(table)
-    for i, v in enumerate(column):
-        if type(v) is int or type(v) is float:
-            vv = str(v)
-        else:
-            vv = "'" + str(v) + "'"
-        sSQL = sSQL + vv
-        if i == len(column) - 1:
-            sSQL = sSQL + ')'
-        else:
-            sSQL = sSQL + ','
-    log.ok_print(sSQL)
-    try:
-        cursor.execute(sSQL)
-        log.ok_print('1 row inserted into {}'.format(table))
-    except Exception as e:
-        log.err_print('Ошибка при Insert в таблицу {}: '.format(table) + str(e))
-
-
-def getwhere(column: dict):
-    sSQL = 'where 1=1 ' + '\n'
-    for k, v in column.items():
-        if type(v) is int or type(v) is float:
-            vv = str(v)
-        else:
-            vv = "'" + str(v) + "'"
-        sSQL = sSQL + 'and ' + k + ' = ' + vv + '\n'
-    return sSQL
-
-
-def commit():
-    conn.commit()
-
-def isPrimary(table, column: dict):  # Проверяет, есть ли уже в таблице записи с такими значениями
-    sSQL = 'select 1 from {} '.format(table) + getwhere(column)
-    ds = getquery(sSQL)
-    if len(ds) is None:
-        print('ret true')
-        return True
-    else:
-        print('ret false')
-        return False
