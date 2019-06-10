@@ -9,12 +9,13 @@ def createdb():
     conn = sql.DatabaseManager('Zirk.db')
     conn.drop_table('Reestr')
     conn.create_table('Reestr', {'reestr_id': 'text',
-                                'pactnum': 'text',
-                                'place': 'text',
-                                'renter': 'text',
-                                'month': 'text',
-                                'summ': 'real',
-                                'phone': 'text'
+                                 'reestr_date': 'date',
+                                 'pactnum': 'text',
+                                 'place': 'text',
+                                 'renter': 'text',
+                                 'month': 'text',
+                                 'amount': 'real',
+                                 'phone': 'text'
                                 }
                      )
 
@@ -39,11 +40,13 @@ def load_file():
     print(ask.result)
     if ask.result is None: return
     else: print(ask.result)
-    file = xlsparser.Reestr()
+    print(type(ask.result))
+    # return
+    file = xlsparser.Reestr(ask.result)
     ds = file.parse()
     if ds:
         conn = sql.DatabaseManager('Zirk.db')
-        conn.delete('where reestr_id = \'{}\''.format(file.id))
+        conn.delete('where reestr_date = date(\'{}\')'.format(str(ask.result)))
         for rec in ds:
             conn.insert('Reestr', rec.values())
         conn.commit()

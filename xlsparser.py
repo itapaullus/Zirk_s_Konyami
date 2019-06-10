@@ -6,14 +6,13 @@ import uuid
 from tkinter import messagebox as mb
 
 class Reestr:
-    def __init__(self):
-        print('init')
+    def __init__(self, dt):
         self.path = askopenfilename(initialdir=r"D:\PycharmProjects\Zirk_s_Konyami",
                                     filetypes =(("XLS File", "*.xls, *.xlsx"),("XLSX File", "*.xlsx"),("All Files","*.*")),
                                     title = "Выберите реестр"
                                )
         self.id = uuid.uuid4()
-
+        self.dt = dt
     def parse(self):
         file = xlrd.open_workbook(self.path)
         sheet = file.sheet_by_index(0)
@@ -49,6 +48,7 @@ class Reestr:
                     total += float(row[sums] or 0)
                     res = {
                             'reestr_id': self.id,
+                            'reestr_date': self.dt,
                             'pactnum': str(row[0]),
                             'place': str(row[1]),
                             'renter': str(row[2]),

@@ -86,6 +86,7 @@ class DatabaseManager(object):
 
     def commit(self):
         self.conn.commit()
+        log.ok_print('Commit')
 
     def isPrimary(self, table, column: dict):  # Проверяет, есть ли уже в таблице записи с такими значениями
         sSQL = 'select 1 from {} '.format(table) + self.getwhere(column)
