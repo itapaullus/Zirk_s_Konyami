@@ -40,13 +40,13 @@ def load_file():
     if ask.result is None: return
     else: print(ask.result)
     file = xlsparser.Reestr()
-    print(file.path)
     ds = file.parse()
-    conn = sql.DatabaseManager('Zirk.db')
-    conn.delete('where reestr_id = \'{}\''.format(file.id))
-    for rec in ds:
-        conn.insert('Reestr', rec.values())
-    conn.commit()
+    if ds:
+        conn = sql.DatabaseManager('Zirk.db')
+        conn.delete('where reestr_id = \'{}\''.format(file.id))
+        for rec in ds:
+            conn.insert('Reestr', rec.values())
+        conn.commit()
 
 window = Tk()
 window.title('Цирк с Конями...')
