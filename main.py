@@ -1,11 +1,12 @@
 from tkinter import *
+from tkinter.ttk import *
 from tkinter import simpledialog as sd
 import tkcalendar, xlsparser
 import sql_method as sql
 import zrk_info as log
 from tkinter import messagebox as mb
-
-
+import WindowController as wc
+import time
 # import tkSimpleDialog
 
 def createdb():
@@ -69,7 +70,8 @@ def load_file():
         for rec in ds:
             conn.insert('Reestr', rec.values())
         conn.commit()
-
+    table = wc.Table(window, headings=('aaa', 'bbb', 'ccc'), rows=((123, 456, 789), ('abc', 'def', 'ghk')))
+    table.pack(expand=YES, fill=BOTH)
 
 window = Tk()
 window.title('Цирк с Конями...')
