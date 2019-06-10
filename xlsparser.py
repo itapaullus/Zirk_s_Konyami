@@ -2,17 +2,19 @@ from tkinter.filedialog import askopenfilename
 import xlrd, xlwt
 import zrk_info as log
 import uuid
-
+import datetime
 from tkinter import messagebox as mb
 
+
 class Reestr:
-    def __init__(self, dt):
+    def __init__(self, dt: datetime.date):
         self.path = askopenfilename(initialdir=r"D:\PycharmProjects\Zirk_s_Konyami",
                                     filetypes =(("XLS File", "*.xls, *.xlsx"),("XLSX File", "*.xlsx"),("All Files","*.*")),
                                     title = "Выберите реестр"
                                )
         self.id = uuid.uuid4()
         self.dt = dt
+
     def parse(self):
         file = xlrd.open_workbook(self.path)
         sheet = file.sheet_by_index(0)

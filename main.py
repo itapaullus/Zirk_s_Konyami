@@ -2,7 +2,8 @@ from tkinter import *
 from tkinter import simpledialog as sd
 import tkcalendar, xlsparser
 import sql_method as sql
-
+import zrk_info as log
+from tkinter import messagebox as mb
 # import tkSimpleDialog
 
 def createdb():
@@ -37,19 +38,31 @@ def save_rate():
 
 def load_file():
     ask = CalendarDialog(window)
-    print(ask.result)
-    if ask.result is None: return
-    else: print(ask.result)
-    print(type(ask.result))
+    if ask.result is None:
+        return
+    elif ask.result.day != 1:
+        log.err_print('Некорректная дата реестра! Допускается только первое число месяца!')
+        mb.showerror('Загрузка реестра', 'Некорректная дата реестра! Допускается только первое число месяца!')
+        return
+    else:
+        # проверим уникальность
+        conn = sql.DatabaseManager('Zirk.db')
+        if not conn.isPrimary('Reestr', {'Reestr_date': ask.result}):
+            if not mb.askokcancel('Повторная загрузка', 'Реестр за эту дату уже заагружался.\nПерезатереть ранее загруженные данные?'):
+                return
+            log.ok_print('Запускаем загрузку за дату: {}'.format(str(ask.result)))
     # return
     file = xlsparser.Reestr(ask.result)
+    if file.path == '':
+        return
     ds = file.parse()
     if ds:
-        conn = sql.DatabaseManager('Zirk.db')
+        # conn = sql.DatabaseManager('Zirk.db')
         conn.delete('where reestr_date = date(\'{}\')'.format(str(ask.result)))
         for rec in ds:
             conn.insert('Reestr', rec.values())
         conn.commit()
+
 
 window = Tk()
 window.title('Цирк с Конями...')
