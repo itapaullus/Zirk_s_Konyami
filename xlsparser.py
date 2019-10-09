@@ -9,7 +9,7 @@ from tkinter import messagebox as mb
 class Reestr:
     def __init__(self, dt: datetime.date):
         self.path = askopenfilename(initialdir=r"D:\PycharmProjects\Zirk_s_Konyami",
-                                    filetypes =(("XLS File", "*.xls, *.xlsx"),("XLSX File", "*.xlsx"),("All Files","*.*")),
+                                    filetypes =(("XLS File", "*.xls;*.xlsx"),("XLSX File", "*.xlsx"),("All Files","*.*")),
                                     title = "Выберите реестр"
                                )
         self.id = uuid.uuid4()
@@ -74,4 +74,3 @@ class Reestr:
         log.ok_print(oktext)
         mb.showinfo('Загрузка реестра', oktext)
         return ds
-
